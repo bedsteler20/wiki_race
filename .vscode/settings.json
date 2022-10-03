@@ -1,0 +1,8 @@
+{
+    "files.exclude": {
+        "**/*.g.dart": true,
+        "*-debug.log": true,
+        ".flutter-plugins{,-dependencies}": true,
+        ".firebaserc": true,
+    }
+}
