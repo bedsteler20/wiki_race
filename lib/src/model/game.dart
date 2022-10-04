@@ -7,11 +7,13 @@ class Game {
   final String startPage;
   final String endPage;
   final String owner;
+  final bool hasStarted;
 
   Game({
     required this.startPage,
     required this.endPage,
     required this.owner,
+    this.hasStarted = false,
   });
 
   factory Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);

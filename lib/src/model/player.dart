@@ -6,10 +6,12 @@ part 'player.g.dart';
 class Player {
   String name;
   String uid;
+  bool hasWon;
 
   Player({
     required this.name,
     required this.uid,
+    this.hasWon = false,
   });
 
   factory Player.fromJson(Map<String, dynamic> json) => _$PlayerFromJson(json);

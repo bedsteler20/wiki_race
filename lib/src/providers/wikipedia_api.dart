@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-class WikiSearchResult {
+class WikiSummery {
   final String title;
   final String? description;
   final String? image;
 
-  WikiSearchResult({
+  WikiSummery({
     required this.title,
     this.description,
     this.image,
@@ -32,7 +32,7 @@ class WikipediaApi {
     }
   }
 
-  Future<List<WikiSearchResult>> search(String query, {int limit = 3}) async {
+  Future<List<WikiSummery>> search(String query, {int limit = 3}) async {
     final url = Uri(
       host: "en.wikipedia.org",
       path: "/w/api.php", // php 🤮,
@@ -66,13 +66,14 @@ class WikipediaApi {
 
     return [
       for (var page in data["query"]["pages"].values)
-        WikiSearchResult(
+        WikiSummery(
           title: page["title"],
           description: page["description"],
           image: page["thumbnail"]?["source"],
         ),
     ];
   }
+
 }
 
 final wikipedia = WikipediaApi();

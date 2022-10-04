@@ -23,6 +23,8 @@ dependencies:
   meta: ^1.8.0
   beamer: ^1.5.3
   flutter_svg: ^1.1.5
+  webviewx: ^0.2.1
+  html: ^0.15.0
 
 dev_dependencies:
   flutter_test:

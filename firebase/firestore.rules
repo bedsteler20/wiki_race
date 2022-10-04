@@ -14,6 +14,12 @@ service cloud.firestore {
         allow write: if resource.data.uid == request.auth.uid;
         allow delete: if resource.data.uid == request.auth.uid || 
       	  get(/database/$(database)/documents/sessions/$(session)).data.owner == request.auth.uid; // TODO: fix this
+
+        match /history/{history=*} {
+          allow write: if player == request.auth.uid;
+          allow read: if true;
+        }
+
       }
     }
     

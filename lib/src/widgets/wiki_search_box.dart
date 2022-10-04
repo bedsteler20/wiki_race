@@ -35,7 +35,7 @@ class WikiSearchBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TypeAheadFormField<WikiSearchResult>(
+    return TypeAheadFormField<WikiSummery>(
       textFieldConfiguration: TextFieldConfiguration(
         controller: controller,
         decoration: InputDecoration(

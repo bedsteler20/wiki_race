@@ -24,22 +24,30 @@ class LobbyPage extends StatefulWidget {
 
 class _LobbyPageState extends State<LobbyPage> {
   late Game? _game = widget.game;
-
+  StreamSubscription? _sub;
   @override
   void initState() {
     super.initState();
 
-    if (_game == null) {
-      FirebaseFirestore.instance
-          .collection("sessions")
-          .doc(widget.gameCode)
-          .get()
-          .then((value) {
-        setState(() {
-          _game = Game.fromJson(value.data()!);
-        });
-      }).catchError((e) => context.displayError(e));
-    }
+    _sub = FirebaseFirestore.instance
+        .collection("sessions")
+        .doc(widget.gameCode)
+        .snapshots()
+        .map((event) => Game.fromJson(event.data()!))
+        .listen((event) {
+      if (_game == null) {
+        setState(() => _game = event);
+      }
+      if (event.hasStarted) {
+        context.beamToNamed("/session/${widget.gameCode}/play",data: _game);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _sub?.cancel();
   }
 
   bool get isOwner {
@@ -53,9 +61,7 @@ class _LobbyPageState extends State<LobbyPage> {
         .doc(widget.gameCode)
         .collection("players")
         .snapshots()
-        .map((event) {
-      return [for (var p in event.docs) Player.fromJson(p.data())];
-    });
+        .map((event) => [for (var p in event.docs) Player.fromJson(p.data())]);
   }
 
   void _kickPlayer(Player player) async {
@@ -65,6 +71,17 @@ class _LobbyPageState extends State<LobbyPage> {
         .collection("players")
         .doc(player.uid)
         .delete();
+  }
+
+  void _start() {
+    if (isOwner) {
+      FirebaseFirestore.instance
+          .collection("sessions")
+          .doc(widget.gameCode)
+          .update({
+        "hasStarted": true,
+      });
+    }
   }
 
   @override
@@ -97,7 +114,7 @@ class _LobbyPageState extends State<LobbyPage> {
       ),
       floatingActionButton: isOwner
           ? FloatingActionButton.extended(
-              onPressed: () {},
+              onPressed: _start,
               label: const Text("Start"),
             )
           : null,
