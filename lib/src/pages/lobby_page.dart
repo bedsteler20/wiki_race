@@ -5,6 +5,8 @@ import 'dart:async';
 import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:wiki_race/src/widgets/qr_code.dart';
+import 'package:wiki_race/src/widgets/shape_background.dart';
 import '../helpers/flutter.dart';
 import '../model/game.dart';
 import '../model/player.dart';
@@ -39,7 +41,7 @@ class _LobbyPageState extends State<LobbyPage> {
         setState(() => _game = event);
       }
       if (event.hasStarted) {
-        context.beamToNamed("/session/${widget.gameCode}/play",data: _game);
+        context.beamToNamed("/session/${widget.gameCode}/play", data: _game);
       }
     });
   }
@@ -84,23 +86,25 @@ class _LobbyPageState extends State<LobbyPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: StreamBuilder<List<Player>>(
-        stream: _playersStream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return Container();
-          return Wrap(
-            alignment: WrapAlignment.center,
-            direction: Axis.horizontal,
-            children: [
-              for (var p in snapshot.data!)
-                Chip(
+  Widget _buildPlayers(BuildContext context) {
+    return StreamBuilder<List<Player>>(
+      stream: _playersStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return Container();
+        return Wrap(
+          alignment: WrapAlignment.center,
+          direction: Axis.horizontal,
+          children: [
+            for (var p in snapshot.data!)
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Chip(
                   labelStyle: const TextStyle(fontSize: 24),
                   label: Text(p.name),
                   deleteIcon: const Icon(Icons.cancel_outlined),
-                  onDeleted: isOwner ? () => _kickPlayer(p) : null,
+                  onDeleted: isOwner && p.uid != context.user.uid
+                      ? () => _kickPlayer(p)
+                      : null,
                   avatar: ClipOval(
                     child: DiceBearAvatar(
                       type: DiceBearAvatarType.identicon,
@@ -108,9 +112,39 @@ class _LobbyPageState extends State<LobbyPage> {
                     ),
                   ),
                 ),
-            ],
-          );
-        },
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      children: [
+        Positioned(
+          child: Text(widget.gameCode),
+          left: 0,
+        ),
+        Positioned(
+          right: 10,
+          child: QrCodeWidget(
+            data: "https://wiki-race-ae773.web.app/session/${widget.gameCode}/",
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ShapeBackground(
+        children: [
+          Center(
+            child: _buildPlayers(context),
+          ),
+        ],
       ),
       floatingActionButton: isOwner
           ? FloatingActionButton.extended(

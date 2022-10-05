@@ -8,7 +8,7 @@
             "name": "wiki_race",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "debug",
+            "toolArgs": ["--web-port=49430"]
         },
     ]
 }

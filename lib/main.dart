@@ -47,6 +47,9 @@ class MyApp extends StatelessWidget {
     locationBuilder: RoutesLocationBuilder(
       routes: {
         "/": (context, state, data) => const HomePage(),
+        "/session/:gameCode": (context, state, data) => HomePage(
+              code: state.pathParameters["gameCode"]!,
+            ),
         "/session/:gameCode/lobby": (context, state, data) => LobbyPage(
               game: data as Game?,
               gameCode: state.pathParameters["gameCode"]!,
