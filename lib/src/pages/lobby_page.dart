@@ -120,19 +120,26 @@ class _LobbyPageState extends State<LobbyPage> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        Positioned(
-          child: Text(widget.gameCode),
-          left: 0,
-        ),
-        Positioned(
-          right: 10,
-          child: QrCodeWidget(
-            data: "https://wiki-race-ae773.web.app/session/${widget.gameCode}/",
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // ignore: prefer_const_constructors
+          Text(
+            "Game Code: ${widget.gameCode.toUpperCase()}",
+            style: const TextStyle(fontSize: 32),
           ),
-        ),
-      ],
+          const SizedBox(width: 20),
+          QrCodeWidget(
+            data: "https://wiki-race-ae773.web.app/session/${widget.gameCode}/",
+            height: 120,
+            width: 120,
+          ),
+        ],
+      ),
     );
   }
 
@@ -141,9 +148,19 @@ class _LobbyPageState extends State<LobbyPage> {
     return Scaffold(
       body: ShapeBackground(
         children: [
-          Center(
-            child: _buildPlayers(context),
-          ),
+          Column(
+            children: [
+              _buildHeader(context),
+              Center(
+                child: Container(
+                  child: _buildPlayers(context),
+                  constraints: const BoxConstraints(
+                    maxWidth: 500,
+                  ),
+                ),
+              ),
+            ],
+          )
         ],
       ),
       floatingActionButton: isOwner

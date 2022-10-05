@@ -69,7 +69,7 @@ class _Form extends StatefulWidget {
 
 class __FormState extends State<_Form> {
   final _formKey = GlobalKey<FormState>();
-  late String? _code = widget.code;
+  late String? _code = widget.code?.toLowerCase();
   String? _nickname = "Undefined Username";
 
   void _join() async {
@@ -121,7 +121,7 @@ class __FormState extends State<_Form> {
                       }
                       return null;
                     },
-                    onChanged: ((value) => _code = value),
+                    onChanged: ((value) => _code = value.toLowerCase()),
                     textCapitalization: TextCapitalization.characters,
                     decoration: const InputDecoration(
                       labelText: "Game Code",
