@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:provider/provider.dart';
+import 'package:wiki_race/src/widgets/wiki_image.dart';
 
 import '../providers/wikipedia_api.dart';
 
@@ -12,26 +13,6 @@ class WikiSearchBox extends StatelessWidget {
   });
   final String label;
   final TextEditingController controller;
-
-  Widget _imageBuilder(String? url, double height, double width) {
-    if (url == null) {
-      return Container(
-        height: height,
-        width: width,
-        color: Colors.grey.shade600,
-        child: const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Icon(Icons.article_outlined),
-        ),
-      );
-    } else {
-      return Image.network(
-        url,
-        width: width,
-        height: height,
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +34,11 @@ class WikiSearchBox extends StatelessWidget {
           pattern.isEmpty ? [] : await wikipedia.search(pattern),
       itemBuilder: (context, results) {
         return ListTile(
-          leading: _imageBuilder(results.image, 80, 80),
+          leading: WikiImage(
+            height: 80,
+            width: 80,
+            url: results.image,
+          ),
           title: Text(results.title),
           subtitle: Text(results.description ?? ""),
         );

@@ -48,7 +48,7 @@ class _WikiFrameState extends State<WikiFrame> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _loadContent("https://${widget.startPage}"),
+      future: _loadContent(widget.startPage),
       builder: (context, data) {
         if (data.hasData) {
           return WebViewX(

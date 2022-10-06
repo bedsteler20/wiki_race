@@ -6,10 +6,12 @@ class WikiSummery {
   final String title;
   final String? description;
   final String? image;
+  final String? extract;
 
   WikiSummery({
     required this.title,
     this.description,
+    this.extract,
     this.image,
   });
 }
@@ -19,8 +21,28 @@ class WikipediaApi {
     return title.replaceAll(" ", "_");
   }
 
+  Future<WikiSummery> getPage(String title) async {
+    final uri =
+        Uri.parse("https://en.wikipedia.org/api/rest_v1/page/summary/$title");
+    final res = await http.get(uri);
+
+    if (res.statusCode != 200) {
+      throw "Wikipedia Search Error: ${res.statusCode}";
+    }
+
+    final data = json.decode(res.body);
+
+    return WikiSummery(
+      title: data["title"],
+      image: data["thumbnail"]?["source"],
+      description: data["description"],
+      extract: data["extract"],
+    );
+  }
+
   Future<bool> dosePageExist(String title) async {
-    final uri = Uri.parse("en.wikipedia.org/api/rest_v1/page/title/$title");
+    final uri =
+        Uri.parse("https://en.wikipedia.org/api/rest_v1/page/title/$title");
     final res = await http.get(uri);
 
     if (res.statusCode == 200) {
@@ -73,7 +95,6 @@ class WikipediaApi {
         ),
     ];
   }
-
 }
 
 final wikipedia = WikipediaApi();

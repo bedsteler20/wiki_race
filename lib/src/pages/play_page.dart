@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:wiki_race/src/helpers/core.dart';
@@ -35,8 +36,12 @@ class _PlayPageState extends State<PlayPage> {
           .collection("sessions")
           .doc(widget.gameCode)
           .get()
-          .then(
-              (value) => setState(() => _game = Game.fromJson(value.data()!)));
+          .then((value) => setState(() {
+                _game = Game.fromJson(value.data()!);
+                _onPageChange(_game!.startPage);
+              }));
+    } else {
+      _onPageChange(_game!.startPage);
     }
     _playersSub = FirebaseFirestore.instance
         .collection("sessions")
@@ -49,9 +54,9 @@ class _PlayPageState extends State<PlayPage> {
         final player = Player.fromJson(doc.doc.data()!);
         if (player.hasWon) {
           if (player.uid == context.user.uid) {
-            WinDialog.show(context, "You Won");
+            context.beamToNamed("/session/${widget.gameCode}/win");
           } else {
-            WinDialog.show(context, "${player.name} Won");
+            context.beamToNamed("/session/${widget.gameCode}/win");
           }
         }
       }

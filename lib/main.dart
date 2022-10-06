@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:wiki_race/src/pages/play_page.dart';
+import 'package:wiki_race/src/pages/win_page.dart';
 import 'firebase_options.dart';
 import 'src/model/game.dart';
 import 'src/pages/home_page.dart';
@@ -56,6 +57,9 @@ class MyApp extends StatelessWidget {
             ),
         "/session/:gameCode/play": (context, state, data) => PlayPage(
               game: data as Game?,
+              gameCode: state.pathParameters["gameCode"]!,
+            ),
+         "/session/:gameCode/win": (context, state, data) => WinPage(
               gameCode: state.pathParameters["gameCode"]!,
             ),
       },
