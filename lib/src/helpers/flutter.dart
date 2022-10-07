@@ -19,5 +19,4 @@ extension BuildContextExt on BuildContext {
     ));
   }
 
-  User get user => FirebaseAuth.instance.currentUser!;
 }

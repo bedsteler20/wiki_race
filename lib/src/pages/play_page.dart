@@ -8,6 +8,7 @@ import 'package:wiki_race/src/helpers/flutter.dart';
 import 'package:wiki_race/src/widgets/wikiframe.dart';
 import 'package:wiki_race/src/widgets/win_dialog.dart';
 
+import '../../main.dart';
 import '../model/game.dart';
 import '../model/player.dart';
 
@@ -32,7 +33,7 @@ class _PlayPageState extends State<PlayPage> {
   void initState() {
     super.initState();
     if (_game == null) {
-      FirebaseFirestore.instance
+      database
           .collection("sessions")
           .doc(widget.gameCode)
           .get()
@@ -43,7 +44,7 @@ class _PlayPageState extends State<PlayPage> {
     } else {
       _onPageChange(_game!.startPage);
     }
-    _playersSub = FirebaseFirestore.instance
+    _playersSub = database
         .collection("sessions")
         .doc(widget.gameCode)
         .collection("players")
@@ -53,7 +54,7 @@ class _PlayPageState extends State<PlayPage> {
       for (var doc in event.docChanges) {
         final player = Player.fromJson(doc.doc.data()!);
         if (player.hasWon) {
-          if (player.uid == context.user.uid) {
+          if (player.uid == auth.currentUser!.uid) {
             context.beamToNamed("/session/${widget.gameCode}/win");
           } else {
             context.beamToNamed("/session/${widget.gameCode}/win");
@@ -71,22 +72,22 @@ class _PlayPageState extends State<PlayPage> {
 
   void _onPageChange(String page1) async {
     var page = page1.replaceAll("_", " ");
-    FirebaseFirestore.instance
+    database
         .collection("sessions")
         .doc(widget.gameCode)
         .collection("players")
-        .doc(context.user.uid)
+        .doc(auth.currentUser!.uid)
         .collection("history")
         .doc()
         .set({
           "title": page,
         }..timestamp());
     if (page == _game!.endPage) {
-      FirebaseFirestore.instance
+      database
           .collection("sessions")
           .doc(widget.gameCode)
           .collection("players")
-          .doc(context.user.uid)
+          .doc(auth.currentUser!.uid)
           .update({"hasWon": true});
     }
   }

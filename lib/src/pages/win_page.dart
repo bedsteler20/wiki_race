@@ -1,12 +1,9 @@
-import 'dart:js';
-
 import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:wiki_race/src/helpers/flutter.dart';
 import 'package:wiki_race/src/providers/wikipedia_api.dart';
 
+import '../../main.dart';
 import '../model/player.dart';
 import '../widgets/wiki_image.dart';
 
@@ -19,7 +16,7 @@ class WinPage extends StatelessWidget {
   final String gameCode;
 
   Future<Player> _future() async {
-    final data = await FirebaseFirestore.instance
+    final data = await database
         .collection("sessions")
         .doc(gameCode)
         .collection("players")
@@ -31,11 +28,11 @@ class WinPage extends StatelessWidget {
 
   Stream<List<WikiSummery>> _getHistory(BuildContext context) async* {
     final res = <WikiSummery>[];
-    final data = await FirebaseFirestore.instance
+    final data = await database
         .collection("sessions")
         .doc(gameCode)
         .collection("players")
-        .doc(context.user.uid)
+        .doc(auth.currentUser!.uid)
         .collection("history")
         .get();
 

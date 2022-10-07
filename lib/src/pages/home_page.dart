@@ -4,6 +4,7 @@ import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../../main.dart';
 import '../helpers/flutter.dart';
 import '../model/game.dart';
 import '../model/player.dart';
@@ -75,16 +76,14 @@ class __FormState extends State<_Form> {
   void _join() async {
     if (!_formKey.currentState!.validate()) return;
     try {
-      final gameRef = FirebaseFirestore.instance
-          .collection("sessions")
-          .doc(_code!.toLowerCase());
+      final gameRef = database.collection("sessions").doc(_code!.toLowerCase());
       final data = await gameRef.get();
 
       if (!data.exists) throw "";
 
-      await gameRef.collection("players").doc(context.user.uid).set(Player(
+      await gameRef.collection("players").doc(auth.currentUser!.uid).set(Player(
             name: _nickname!,
-            uid: context.user.uid,
+            uid: auth.currentUser!.uid,
           ).toJson());
 
       context.beamToNamed(

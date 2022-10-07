@@ -12,20 +12,29 @@ import 'firebase_options.dart';
 import 'src/model/game.dart';
 import 'src/pages/home_page.dart';
 import 'src/pages/lobby_page.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+
+late final FirebaseAnalytics analytics;
+late final FirebaseFirestore database;
+late final FirebaseAuth auth;
 
 void main() async {
-  // GoogleFonts.config.allowRuntimeFetching = kDebugMode;
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  analytics = FirebaseAnalytics.instance;
+  database = FirebaseFirestore.instance;
+  auth = FirebaseAuth.instance;
+
   if (kDebugMode) {
-    FirebaseFirestore.instance.useFirestoreEmulator("localhost", 8080);
+    database.useFirestoreEmulator("localhost", 8080);
   }
 
   try {
-    await FirebaseAuth.instance.signInAnonymously();
+    await auth.signInAnonymously();
     print("Signed in with temporary account.");
-    print("Account Id: ${FirebaseAuth.instance.currentUser?.uid}");
+    print("Account Id: ${auth.currentUser?.uid}");
   } on FirebaseAuthException catch (e) {
     switch (e.code) {
       case "operation-not-allowed":
@@ -59,7 +68,7 @@ class MyApp extends StatelessWidget {
               game: data as Game?,
               gameCode: state.pathParameters["gameCode"]!,
             ),
-         "/session/:gameCode/win": (context, state, data) => WinPage(
+        "/session/:gameCode/win": (context, state, data) => WinPage(
               gameCode: state.pathParameters["gameCode"]!,
             ),
       },

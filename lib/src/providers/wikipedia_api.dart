@@ -22,8 +22,11 @@ class WikipediaApi {
   }
 
   Future<WikiSummery> getPage(String title) async {
-    final uri =
-        Uri.parse("https://en.wikipedia.org/api/rest_v1/page/summary/$title");
+    final uri = Uri(
+      host: "en.wikipedia.org",
+      scheme: "https",
+      pathSegments: ["api", "rest_v1", "page", "summary", title],
+    );
     final res = await http.get(uri);
 
     if (res.statusCode != 200) {
@@ -41,9 +44,11 @@ class WikipediaApi {
   }
 
   Future<bool> dosePageExist(String title) async {
-    final uri =
-        Uri.parse("https://en.wikipedia.org/api/rest_v1/page/title/$title");
-    final res = await http.get(uri);
+    final uri = Uri(
+      host: "en.wikipedia.org",
+      scheme: "https",
+      pathSegments: ["api", "rest_v1", "page", "summary", title],
+    );final res = await http.get(uri);
 
     if (res.statusCode == 200) {
       return true;

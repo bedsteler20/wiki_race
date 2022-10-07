@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:wiki_race/src/widgets/qr_code.dart';
 import 'package:wiki_race/src/widgets/shape_background.dart';
-import '../helpers/flutter.dart';
+import '../../main.dart';
 import '../model/game.dart';
 import '../model/player.dart';
 import '../widgets/dice_bear.dart';
@@ -31,7 +31,7 @@ class _LobbyPageState extends State<LobbyPage> {
   void initState() {
     super.initState();
 
-    _sub = FirebaseFirestore.instance
+    _sub = database
         .collection("sessions")
         .doc(widget.gameCode)
         .snapshots()
@@ -54,11 +54,11 @@ class _LobbyPageState extends State<LobbyPage> {
 
   bool get isOwner {
     if (_game == null) return false;
-    return _game!.owner == context.user.uid;
+    return _game!.owner == auth.currentUser!.uid;
   }
 
   Stream<List<Player>> get _playersStream {
-    return FirebaseFirestore.instance
+    return database
         .collection("sessions")
         .doc(widget.gameCode)
         .collection("players")
@@ -67,7 +67,7 @@ class _LobbyPageState extends State<LobbyPage> {
   }
 
   void _kickPlayer(Player player) async {
-    await FirebaseFirestore.instance
+    await database
         .collection("sessions")
         .doc(widget.gameCode)
         .collection("players")
@@ -77,10 +77,7 @@ class _LobbyPageState extends State<LobbyPage> {
 
   void _start() {
     if (isOwner) {
-      FirebaseFirestore.instance
-          .collection("sessions")
-          .doc(widget.gameCode)
-          .update({
+      database.collection("sessions").doc(widget.gameCode).update({
         "hasStarted": true,
       });
     }
@@ -102,7 +99,7 @@ class _LobbyPageState extends State<LobbyPage> {
                   labelStyle: const TextStyle(fontSize: 24),
                   label: Text(p.name),
                   deleteIcon: const Icon(Icons.cancel_outlined),
-                  onDeleted: isOwner && p.uid != context.user.uid
+                  onDeleted: isOwner && p.uid != auth.currentUser!.uid
                       ? () => _kickPlayer(p)
                       : null,
                   avatar: ClipOval(

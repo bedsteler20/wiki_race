@@ -6,6 +6,7 @@ import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../../main.dart';
 import '../helpers/core.dart';
 import '../helpers/flutter.dart';
 import '../helpers/math.dart';
@@ -57,23 +58,23 @@ class _CreateGameDialogState extends State<CreateGameDialog> {
       final game = Game(
         startPage: _startPageController.text,
         endPage: _endPageController.text,
-        owner: context.user.uid,
+        owner: auth.currentUser!.uid,
       );
       final player = Player(
         name: _nicknameController.text,
-        uid: context.user.uid,
+        uid: auth.currentUser!.uid,
       );
 
-      await FirebaseFirestore.instance
+      await database
           .collection("sessions")
           .doc(gameCode)
           .set(game.toJson()..timestamp());
 
-      await FirebaseFirestore.instance
+      await database
           .collection("sessions")
           .doc(gameCode)
           .collection("players")
-          .doc(context.user.uid)
+          .doc(auth.currentUser!.uid)
           .set(player.toJson());
 
       context.beamToNamed("/session/$gameCode/lobby", data: game);
