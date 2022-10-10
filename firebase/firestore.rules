@@ -11,12 +11,12 @@ service cloud.firestore {
       match /players/{player=*} {
     	  allow create: if true;
         allow read: if true;
-        allow write: if resource.data.uid == request.auth.uid;
+        allow write: if true;
         allow delete: if resource.data.uid == request.auth.uid || 
       	  get(/database/$(database)/documents/sessions/$(session)).data.owner == request.auth.uid; // TODO: fix this
 
         match /history/{history=*} {
-          allow write: if player == request.auth.uid;
+          allow write: if true;
           allow read: if true;
         }
 

@@ -27,7 +27,7 @@ class PlayPage extends StatefulWidget {
 
 class _PlayPageState extends State<PlayPage> {
   StreamSubscription? _playersSub;
-  late Game? _game = widget.game;
+  Game? _game;
 
   @override
   void initState() {

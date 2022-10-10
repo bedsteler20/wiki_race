@@ -16,12 +16,20 @@ import '../providers/wikipedia_api.dart';
 import 'wiki_search_box.dart';
 
 class CreateGameDialog extends StatefulWidget {
-  const CreateGameDialog({super.key});
-
-  static void show(BuildContext context) {
+  const CreateGameDialog({
+    super.key,
+    required this.gameCode,
+    required this.isReset,
+  });
+  final String gameCode;
+  final bool isReset;
+  static void show(BuildContext context, {String? gameCode}) {
     showDialog(
       context: context,
-      builder: ((context) => const CreateGameDialog()),
+      builder: (context) => CreateGameDialog(
+        gameCode: gameCode ?? Random().string(8),
+        isReset: gameCode != null,
+      ),
     );
   }
 
@@ -44,48 +52,102 @@ class _CreateGameDialogState extends State<CreateGameDialog> {
     super.dispose();
   }
 
-  void _create() async {
-    //if (!_formKey.currentState!.validate()) return;
+  Future<bool> _validate() async {
+    if (_endPageController.text.isEmpty) return false;
+    if (_startPageController.text.isEmpty) return false;
 
-    if (_endPageController.text.isEmpty ||
-        !(await wikipedia.dosePageExist(_endPageController.text))) {
+    if (!(await wikipedia.dosePageExist(_endPageController.text))) {
       context.displayError("Invalid End Page");
-    } else if (_startPageController.text.isEmpty ||
-        !(await wikipedia.dosePageExist(_startPageController.text))) {
-      context.displayError("Invalid Start Page");
-    } else {
-      final gameCode = Random().string(8);
-      final game = Game(
-        startPage: _startPageController.text,
-        endPage: _endPageController.text,
-        owner: auth.currentUser!.uid,
-      );
-      final player = Player(
-        name: _nicknameController.text,
-        uid: auth.currentUser!.uid,
-      );
-
-      await database
-          .collection("sessions")
-          .doc(gameCode)
-          .set(game.toJson()..timestamp());
-
-      await database
-          .collection("sessions")
-          .doc(gameCode)
-          .collection("players")
-          .doc(auth.currentUser!.uid)
-          .set(player.toJson());
-
-      context.beamToNamed("/session/$gameCode/lobby", data: game);
+      return false;
     }
+
+    if (!(await wikipedia.dosePageExist(_startPageController.text))) {
+      context.displayError("Invalid Start Page");
+      return false;
+    }
+    return true;
+  }
+
+  void _create() async {
+    if (!(await _validate())) return;
+    if (!_formKey.currentState!.validate()) return;
+
+    final game = Game(
+      startPage: _startPageController.text,
+      endPage: _endPageController.text,
+      owner: auth.currentUser!.uid,
+    );
+    final player = Player(
+      name: _nicknameController.text,
+      uid: auth.currentUser!.uid,
+    );
+
+    await database
+        .collection("sessions")
+        .doc(widget.gameCode)
+        .set(game.toJson()..timestamp());
+
+    await database
+        .collection("sessions")
+        .doc(widget.gameCode)
+        .collection("players")
+        .doc(auth.currentUser!.uid)
+        .set(player.toJson());
+
+    context.beamToNamed("/session/${widget.gameCode}/play");
+  }
+
+  void _reset() async {
+    if (!(await _validate())) return;
+
+    final winner = await database
+        .collection("sessions")
+        .doc(widget.gameCode)
+        .collection("players")
+        .get();
+
+    for (var elem in winner.docs) {
+      final player = Player.fromJson(elem.data());
+      player.hasWon = false;
+      await database
+          .collection("sessions")
+          .doc(widget.gameCode)
+          .collection("players")
+          .doc(player.uid)
+          .set(player.toJson());
+      final history = await database
+          .collection("sessions")
+          .doc(widget.gameCode)
+          .collection("players")
+          .doc(player.uid)
+          .collection("history")
+          .get();
+
+      for (var e in history.docs) {
+        await database
+            .collection("sessions")
+            .doc(widget.gameCode)
+            .collection("players")
+            .doc(player.uid)
+            .collection("history")
+            .doc(e.id)
+            .delete();
+      }
+    }
+
+    await database.collection("sessions").doc(widget.gameCode).update({
+      "hasStarted": false,
+      "startPage": _startPageController.text,
+      "endPage": _endPageController.text,
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: _formKey,
       child: SimpleDialog(
-        title: const Text("Create Game"),
+        title: Text(widget.isReset ? "Reset" : "Create Game"),
         contentPadding: const EdgeInsets.all(20),
         children: [
           WikiSearchBox(
@@ -96,22 +158,24 @@ class _CreateGameDialogState extends State<CreateGameDialog> {
             label: "End Page",
             controller: _endPageController,
           ),
-          TextFormField(
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return "Please enter a nickname";
-              }
-            },
-            controller: _nicknameController,
-            decoration: const InputDecoration(
-              labelText: "Nickname",
-              filled: true,
-              border: OutlineInputBorder(
-                gapPadding: 10,
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+          if (!widget.isReset)
+            TextFormField(
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Please enter a nickname";
+                }
+                return null;
+              },
+              controller: _nicknameController,
+              decoration: const InputDecoration(
+                labelText: "Nickname",
+                filled: true,
+                border: OutlineInputBorder(
+                  gapPadding: 10,
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
               ),
             ),
-          ),
           const SizedBox(
             height: 80,
             width: 200,
@@ -120,8 +184,8 @@ class _CreateGameDialogState extends State<CreateGameDialog> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               ElevatedButton(
-                onPressed: _create,
-                child: const Text("Create"),
+                onPressed: widget.isReset ? _reset : _create,
+                child: Text(widget.isReset ? "Reset" : "Create"),
               ),
             ],
           )

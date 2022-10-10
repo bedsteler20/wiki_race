@@ -46,6 +46,9 @@ class WikiSearchBox extends StatelessWidget {
       onSuggestionSelected: ((suggestion) {
         controller.text = suggestion.title;
       }),
+      onSaved: ((suggestion) {
+        controller.text = suggestion ?? "";
+      }),
     );
   }
 }
